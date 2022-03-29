@@ -27,7 +27,7 @@
             <p><strong>{{ post.author }}</strong> {{ post.created_on }}</p>
             <p>{{ post.body }}</p>
             <a href="{% url 'post-detail' post.pk %}" class="stretched-link"></a>
-            <button class="btn btn-primary mb-2" type="submit"> post </button>
+            <!-- <button class="btn btn-primary mb-2" type="submit"> post </button> -->
         </div>
     </div>
     {% endfor %}

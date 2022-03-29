@@ -1,16 +1,13 @@
-# -*- coding: utf-8 -*-
 """
 oauthlib.oauth2.rfc6749.request_validator
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
-from __future__ import absolute_import, unicode_literals
-
 import logging
 
 log = logging.getLogger(__name__)
 
 
-class RequestValidator(object):
+class RequestValidator:
 
     def client_authentication_required(self, request, *args, **kwargs):
         """Determine if client authentication is required for current request.
@@ -51,6 +48,17 @@ class RequestValidator(object):
         Headers may be accesses through request.headers and parameters found in
         both body and query can be obtained by direct attribute access, i.e.
         request.client_id for client_id in the URL query.
+		
+        The authentication process is required to contain the identification of
+        the client (i.e. search the database based on the client_id). In case the
+        client doesn't exist based on the received client_id, this method has to
+        return False and the HTTP response created by the library will contain
+        'invalid_client' message. 
+
+        After the client identification succeeds, this method needs to set the
+        client on the request, i.e. request.client = client. A client object's
+        class must contain the 'client_id' attribute and the 'client_id' must have
+        a value.
 
         :param request: OAuthlib request.
         :type request: oauthlib.common.Request
@@ -641,3 +649,28 @@ class RequestValidator(object):
 
         """
         raise NotImplementedError('Subclasses must implement this method.')
+
+    def is_origin_allowed(self, client_id, origin, request, *args, **kwargs):
+        """Indicate if the given origin is allowed to access the token endpoint
+        via Cross-Origin Resource Sharing (CORS).  CORS is used by browser-based
+        clients, such as Single-Page Applications, to perform the Authorization
+        Code Grant.
+
+        (Note:  If performing Authorization Code Grant via a public client such
+        as a browser, you should use PKCE as well.)
+
+        If this method returns true, the appropriate CORS headers will be added
+        to the response.  By default this method always returns False, meaning
+        CORS is disabled.
+
+        :param client_id: Unicode client identifier.
+        :param redirect_uri: Unicode origin.
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        :rtype: bool
+
+        Method is used by:
+            - Authorization Code Grant
+
+        """
+        return False

@@ -22,6 +22,13 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 's_8&hc^&p-k$ac(zwv#6c8n#hzg#)9d548wg)tcrg#16)deca!'
 
+
+
+API_KEY1 = 'vgnRH9wnDTnK6791klWfZqLR4'
+API_KEY_SECRET1 = '6TbwBj5w7UuBNnVvFIeVNvrrwrzdGntoU8JqWhMsD6bMP71Ss9'
+ACCESS_TOKEN1 = '1504464818585055242-wYgAE32XdcT7i8MiCm0Ejnl3Afp9QU'
+ACCESS_TOKEN_SECRET1 = 'sWpi2LmbTzg02nVaN2uL7u0xwI2KJu4672fnE2rGLPKNK'
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -41,7 +48,6 @@ AUTHENTICATION_BACKENDS = [
 INSTALLED_APPS = [
     'social',
     'landing',
-
     'crispy_forms',
     'allauth',
     'allauth.account',

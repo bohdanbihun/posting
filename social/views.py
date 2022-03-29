@@ -1,10 +1,59 @@
-from django.shortcuts import render
+
+import tweepy
+from django.conf import settings
+from allauth.socialaccount import app_settings, providers
+from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.views import View
 from .models import Post, Comment, UserProfile
 from .forms import PostForm, CommentForm
 from django.views.generic.edit import UpdateView, DeleteView
+
+from allauth.socialaccount.models import SocialLogin, SocialToken, SocialApp
+from allauth.socialaccount.providers.facebook.views import fb_complete_login
+from allauth.socialaccount.helpers import complete_social_login
+import allauth.account
+
+
+def send(request, pk ):
+
+    post = Post.objects.get(pk=pk)
+    app = get_current_app(request, 'twitter')
+    # Create Tweepy OAuth Handler
+    oauth = tweepy.OAuthHandler(app.client_id, app.secret)
+    # Retrieve access token from the current session, created by Allauth
+    access_key = request.session['oauth_%s_access_token' % 'api.twitter.com']['oauth_token']
+    access_secret = request.session['oauth_%s_access_token' % 'api.twitter.com']['oauth_token_secret']
+    # Set access token in Tweepy OAuth Handler
+    oauth.set_access_token(access_key, access_secret)
+    # Return Tweepy API object
+
+
+    api = tweepy.API(oauth)
+
+    api.update_status(post.body)
+
+    return render(request)
+
+
+def get_current_app(request, provider):
+	""" This chunk of code was borrowed from
+		django-allauth/allauth/socialaccount/adapter.py
+	:param request:
+	:param provider:
+	:return: app:
+	"""
+	from allauth.socialaccount.models import SocialApp
+
+	config = app_settings.PROVIDERS.get(provider, {}).get('APP')
+	if config:
+		app = SocialApp(provider=provider)
+		for field in ['client_id', 'secret', 'key']:
+			setattr(app, field, config.get(field))
+	else:
+		app = SocialApp.objects.get_current(provider, request)
+	return app
 
 
 class PostListView(LoginRequiredMixin, View):
@@ -46,6 +95,7 @@ class PostDetailView(LoginRequiredMixin, View):
             'post': post,
             'form': form,
             'comments': comments,
+
         }
 
         return render(request, 'social/post_detail.html', context)
@@ -129,3 +179,13 @@ class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def test_func(self):
         profile = self.get_object()
         return self.request.user == profile.user
+
+# /////////////////
+
+##
+
+def home(request):
+    #user = request.user
+    access_token = SocialToken.objects.get(account__user=request.user, account__provider='facebook') #get instead of filter (you need only one object)
+
+    r = requests.get('https://graph.facebook.com/me?access_token='+access_token.token+'&fields=id,name,email')
