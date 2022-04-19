@@ -19,16 +19,17 @@ import allauth.account
 def send(request, pk ):
 
     post = Post.objects.get(pk=pk)
+    ki = SocialToken.objects.get(account=post.author.id-1)
     app = get_current_app(request, 'twitter')
     # Create Tweepy OAuth Handler
     oauth = tweepy.OAuthHandler(app.client_id, app.secret)
     # Retrieve access token from the current session, created by Allauth
-    access_key = request.session['oauth_%s_access_token' % 'api.twitter.com']['oauth_token']
-    access_secret = request.session['oauth_%s_access_token' % 'api.twitter.com']['oauth_token_secret']
+    # access_key = request.session['oauth_%s_access_token' % 'api.twitter.com']['oauth_token']
+    # access_secret = request.session['oauth_%s_access_token' % 'api.twitter.com']['oauth_token_secret']
     # Set access token in Tweepy OAuth Handler
-    oauth.set_access_token(access_key, access_secret)
+    oauth.set_access_token(ki.token , ki.token_secret)
     # Return Tweepy API object
-
+    # oauth.set_access_token(ACCESS_TOKEN1, ACCESS_TOKEN_SECRET1)
 
     api = tweepy.API(oauth)
 
@@ -87,11 +88,13 @@ class PostListView(LoginRequiredMixin, View):
 class PostDetailView(LoginRequiredMixin, View):
     def get(self, request, pk, *args, **kwargs):
         post = Post.objects.get(pk=pk)
+        ki = SocialToken.objects.get(account=post.author.id-1)
         form = CommentForm()
 
         comments = Comment.objects.filter(post=post).order_by('-created_on')
 
         context = {
+            'ki':ki,
             'post': post,
             'form': form,
             'comments': comments,
@@ -184,8 +187,9 @@ class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
 ##
 
-def home(request):
-    #user = request.user
-    access_token = SocialToken.objects.get(account__user=request.user, account__provider='facebook') #get instead of filter (you need only one object)
-
+def sendF(request, pk ):
+    post = Post.objects.get(pk=pk)
+    ki = SocialToken.objects.get(account=post.author.id-1)
+    access_token =  SocialToken.objects.get(account=post.author.id-1, account__provider='facebook')
+    # post.body
     r = requests.get('https://graph.facebook.com/me?access_token='+access_token.token+'&fields=id,name,email')

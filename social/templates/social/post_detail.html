@@ -19,6 +19,11 @@
                 {% endif %}
             </p>
             <p  method="post" name="content">{{ post.body }}
+
+
+                <p>{{ ki.token }}</p>
+                <p>{{ ki.token_secret }}</p>
+
             <a href="{% url 'send' post.pk   %}" class="btn btn-success mt-3" >send!</a>
             </p>
         </div>
